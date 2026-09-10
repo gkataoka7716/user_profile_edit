@@ -15,6 +15,3 @@ class UserInfo(Base):
     prefecture_id = Column(Integer, ForeignKey('prefecture.id'), nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
-    
-
-	
