@@ -4,15 +4,19 @@ from typing import Annotated
 from dotenv import load_dotenv
 from fastapi import Depends
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session, sessionmaker, declarative_base
 
 
-load_dotenv()  # .envファイルの読み込み
+load_dotenv()
 
 
-# データベース接続
+# DB接続
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
+
+
+# モデルの基底クラス
+Base = declarative_base()
 
 
 # セッションの作成

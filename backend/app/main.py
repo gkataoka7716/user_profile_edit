@@ -1,11 +1,9 @@
-from backend.app.routers import gender_router, prefectures_router, user_router
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from database import engine
-from database.models import Base
+from database.database import engine, Base
 
-from backend.app.routers import userinfo_router 
+from app.routers import userinfo_router, gender_router, prefectures_router, user_router
 
 # 起動時に１回動作する
 @asynccontextmanager

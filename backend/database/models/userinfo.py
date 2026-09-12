@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey, Date
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from database.database import Base
 
 class UserInfo(Base):
     __tablename__ = 'user_info'

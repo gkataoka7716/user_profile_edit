@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from database import DbSession
+from database.database import DbSession
 
 from app.schemas.user_schema import UserRegisterRequest, UserLoginRequest, UserUpdateRequest
 
@@ -19,13 +19,13 @@ async def login_user(user: UserLoginRequest, db: DbSession):
 
 # 全ユーザー取得
 @router.get("/users")
-async def get_users():
+async def get_users(db: DbSession):
     pass
 
 
 # ユーザー取得
 @router.get("/users/{user_id}")
-async def get_user(user_id: int):
+async def get_user(user_id: int, db: DbSession):
     pass
 
 
@@ -37,5 +37,5 @@ async def update_user(user_id: int, user: UserUpdateRequest, db: DbSession):
 
 # ユーザー削除
 @router.delete("/users/{user_id}")
-async def delete_user(user_id: int):
+async def delete_user(user_id: int, db: DbSession):
     pass

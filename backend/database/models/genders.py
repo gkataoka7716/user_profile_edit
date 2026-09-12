@@ -1,8 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-
-
-Base = declarative_base()
+from database.database import Base
 
 class Genders(Base):
 	__tablename__ = 'genders'
