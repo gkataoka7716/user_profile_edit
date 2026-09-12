@@ -1,5 +1,5 @@
-from sqlalchemy import Session, SQLAlchemyError
-
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 from database.models.prefectures import Prefectures
 from app.exception.database_exception import DatabaseError
 

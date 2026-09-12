@@ -2,7 +2,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 import logging
 
-from database.models.genders import Gender
+from database.models.genders import Genders
 from app.exception.database_exception import DatabaseError
 
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # 性別登録
 def create_gender(gender: str, db: Session):
-    new_gender = Gender(name=gender)
+    new_gender = Genders(name=gender)
 
     try:
         db.add(new_gender)
@@ -36,8 +36,8 @@ def create_gender(gender: str, db: Session):
 def get_genders(db: Session):
     try:
         genders = (
-            db.query(Gender)
-            .order_by(Gender.id)
+            db.query(Genders)
+            .order_by(Genders.id)
             .all()
         )
 
@@ -57,8 +57,8 @@ def get_genders(db: Session):
 def get_gender(gender_id: int, db: Session):
     try:
         gender = (
-            db.query(Gender)
-            .filter(Gender.id == gender_id)
+            db.query(Genders)
+            .filter(Genders.id == gender_id)
             .first()
         )
 
@@ -92,8 +92,8 @@ def update_gender(
 ):
     try:
         gender = (
-            db.query(Gender)
-            .filter(Gender.id == gender_id)
+            db.query(Genders)
+            .filter(Genders.id == gender_id)
             .first()
         )
 
@@ -130,8 +130,8 @@ def update_gender(
 def delete_gender(gender_id: int, db: Session):
     try:
         gender = (
-            db.query(Gender)
-            .filter(Gender.id == gender_id)
+            db.query(Genders)
+            .filter(Genders.id == gender_id)
             .first()
         )
 
