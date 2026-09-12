@@ -1,7 +1,10 @@
-from sqlalchemy import Session
+from sqlalchemy import Session, SQLAlchemyError
 
 from database.models.prefectures import Prefectures
-from app.schemas.prefectures_schema import PrefecturesResponse
+from app.exception.database_exception import DatabaseError
+
+
+import logging
 
 
 PREFECTURES = [
@@ -54,11 +57,14 @@ PREFECTURES = [
     "沖縄県",
 ]
 
+logger = logging.getLogger()
+
 
 def create_prefectures(db: Session):
 
 	# すでに登録されていれば何もしない
     if db.query(Prefectures).first() is not None:
+        logger.info("[info] 47都道府県は登録済みです。")
         return
     
     try:
@@ -66,11 +72,23 @@ def create_prefectures(db: Session):
             db.add(Prefectures(name=name))
 
         db.commit()
+        logger.info("[info] 47都道府県を登録しました。")
     except Exception:
         db.rollback()
-        raise 
+        logger.error("[エラー] 47都道府県の登録に失敗しました。")
+        raise DatabaseError("47都道府県の登録に失敗しました。")
 
 
-def get_prefectures(db: Session) -> list[PrefecturesResponse]:
-    prefectures = db.query(Prefectures).order_by(Prefectures.id).all()
+def get_prefectures(db: Session) -> list[Prefectures]:
+
+    try:
+        prefectures = db.query(Prefectures).order_by(Prefectures.id).all()
+
+        if len(prefectures) != 47:
+            logger.warning("[警告] 47都道府県が47個ありません。")
+
+    except SQLAlchemyError:
+        logger.error("[エラー] 47都道府県の取得に失敗しました")
+        raise DatabaseError("47都道府県の取得に失敗しました")
+
     return prefectures

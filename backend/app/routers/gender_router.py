@@ -7,8 +7,9 @@ router = APIRouter()
 
 # 性別登録
 @router.post("/genders")
-async def create_gender(db: DbSession):
-    pass
+async def create_gender(gender: GenderCreateRequest, db: DbSession):
+    request = gender_service.create_gender(gender)
+    return request
 
 # 登録した性別をすべて取得
 @router.get("/genders")
@@ -17,7 +18,7 @@ async def get_genders(db: DbSession):
 
 # 特定の性別取得
 @router.get("/genders/{gender_id}")
-async def get_gender(gender_id: int, gender: GenderCreateRequest, db: DbSession):
+async def get_gender(gender_id: int, db: DbSession):
     pass
 
 # 特定の性別名の変更
