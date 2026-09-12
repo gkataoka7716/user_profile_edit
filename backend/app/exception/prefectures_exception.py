@@ -1,1 +1,2 @@
-class DatabaseError()
+class DatabaseError():
+	pass
