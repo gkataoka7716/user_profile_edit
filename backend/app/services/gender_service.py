@@ -1,15 +1,162 @@
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
+import logging
+
 from database.models.genders import Gender
+from app.exception.database_exception import DatabaseError
 
-def create_gender(gender, db: Session):
-	gender = Gender(name=gender)
-	try:
-		db.add(gender)
-		db.commit()
-		db.refresh()
-	except:
-		db.rollback()
-		raise
 
-	return 
+logger = logging.getLogger(__name__)
 
+
+# 性別登録
+def create_gender(gender: str, db: Session):
+    new_gender = Gender(name=gender)
+
+    try:
+        db.add(new_gender)
+        db.commit()
+        db.refresh(new_gender)
+
+        logger.info("[INFO] 新しい性別の登録が完了しました。")
+
+        return new_gender
+
+    except SQLAlchemyError:
+        db.rollback()
+
+        logger.exception("[ERROR] 新しい性別の登録に失敗しました。")
+
+        raise DatabaseError(
+            "新しい性別の登録に失敗しました。"
+        )
+
+
+# 登録済み性別をすべて取得
+def get_genders(db: Session):
+    try:
+        genders = (
+            db.query(Gender)
+            .order_by(Gender.id)
+            .all()
+        )
+
+        logger.info("[INFO] 登録済み性別の取得が完了しました。")
+
+        return genders
+
+    except SQLAlchemyError:
+        logger.exception("[ERROR] 登録済み性別の取得に失敗しました。")
+
+        raise DatabaseError(
+            "登録済み性別の取得に失敗しました。"
+        )
+
+
+# 特定の性別を取得
+def get_gender(gender_id: int, db: Session):
+    try:
+        gender = (
+            db.query(Gender)
+            .filter(Gender.id == gender_id)
+            .first()
+        )
+
+        if gender is None:
+            raise ValueError("指定された性別が存在しません。")
+
+        logger.info(
+            f"[INFO] 性別の取得が完了しました。gender_id={gender_id}"
+        )
+
+        return gender
+
+    except ValueError:
+        raise
+
+    except SQLAlchemyError:
+        logger.exception(
+            f"[ERROR] 性別の取得に失敗しました。gender_id={gender_id}"
+        )
+
+        raise DatabaseError(
+            "性別の取得に失敗しました。"
+        )
+
+
+# 特定の性別名を変更
+def update_gender(
+    gender_id: int,
+    gender_name: str,
+    db: Session
+):
+    try:
+        gender = (
+            db.query(Gender)
+            .filter(Gender.id == gender_id)
+            .first()
+        )
+
+        if gender is None:
+            raise ValueError("指定された性別が存在しません。")
+
+        gender.name = gender_name
+
+        db.commit()
+        db.refresh(gender)
+
+        logger.info(
+            f"[INFO] 性別の更新が完了しました。gender_id={gender_id}"
+        )
+
+        return gender
+
+    except ValueError:
+        raise
+
+    except SQLAlchemyError:
+        db.rollback()
+
+        logger.exception(
+            f"[ERROR] 性別の更新に失敗しました。gender_id={gender_id}"
+        )
+
+        raise DatabaseError(
+            "性別の更新に失敗しました。"
+        )
+
+
+# 特定の性別を削除
+def delete_gender(gender_id: int, db: Session):
+    try:
+        gender = (
+            db.query(Gender)
+            .filter(Gender.id == gender_id)
+            .first()
+        )
+
+        if gender is None:
+            raise ValueError("指定された性別が存在しません。")
+
+        db.delete(gender)
+        db.commit()
+
+        logger.info(
+            f"[INFO] 性別の削除が完了しました。gender_id={gender_id}"
+        )
+
+        return gender
+
+    except ValueError:
+        raise
+
+    except SQLAlchemyError:
+        db.rollback()
+
+        logger.exception(
+            f"[ERROR] 性別の削除に失敗しました。gender_id={gender_id}"
+        )
+
+        raise DatabaseError(
+            "性別の削除に失敗しました。"
+        )
