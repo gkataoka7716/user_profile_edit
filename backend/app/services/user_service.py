@@ -19,13 +19,13 @@ from werkzeug.security import (
     check_password_hash,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 # ユーザー登録
 def create_user(user: UserRegisterRequest, db: DbSession):
     try:
-        if _user_exists(user.name, db):
+        if _user_exists(user.username, db):
             raise UserAlreadyExistsError(
                 "ユーザーはすでに登録されています。"
             )
@@ -33,8 +33,9 @@ def create_user(user: UserRegisterRequest, db: DbSession):
         hashed_password = _password_hash(user.password)
 
         new_user = User(
-            name=user.name,
+            username=user.username,
             password=hashed_password,
+            role=user.role
         )
 
         db.add(new_user)
@@ -59,7 +60,7 @@ def create_user(user: UserRegisterRequest, db: DbSession):
 # ログイン
 def login_user(user: UserLoginRequest, db: DbSession):
     try:
-        db_user = _get_user_by_name(user.name, db)
+        db_user = _get_user_by_name(user.username, db)
 
         if db_user is None:
             raise UserNotFoundError(
@@ -82,7 +83,7 @@ def login_user(user: UserLoginRequest, db: DbSession):
             "message": "ログインに成功しました。",
             "access_token": access_token,
             "user_id": db_user.id,
-            "name": db_user.name,
+            "username": db_user.username,
         }
 
     except UserNotFoundError:
@@ -98,11 +99,7 @@ def login_user(user: UserLoginRequest, db: DbSession):
 # 全ユーザー取得
 def get_users(db: DbSession):
     try:
-        users = (
-            db.query(User)
-            .order_by(User.id)
-            .all()
-        )
+        users = db.query(User.username).order_by(User.id).scalars().all()
 
         logger.info("[INFO] 全ユーザーを取得しました。")
 
@@ -118,7 +115,7 @@ def get_users(db: DbSession):
 # ユーザー取得
 def get_user(user_id: int, db: DbSession):
     try:
-        user = _get_user_by_id(user_id, db)
+        user = get_user_by_id(user_id, db)
 
         if user is None:
             raise UserNotFoundError(
@@ -144,19 +141,19 @@ def update_user(
     db: DbSession,
 ):
     try:
-        user = _get_user_by_id(user_id, db)
+        user = get_user_by_id(user_id, db)
 
         if user is None:
             raise UserNotFoundError(
                 "指定されたユーザーは存在しません。"
             )
 
-        # nameが変更される場合
-        if request.name is not None:
+        # usernameが変更される場合
+        if request.username is not None:
 
             # 自分以外のユーザーが同じ名前を使用していないか確認
             existing_user = _get_user_by_name(
-                request.name,
+                request.username,
                 db,
             )
 
@@ -168,13 +165,17 @@ def update_user(
                     "そのユーザー名はすでに使用されています。"
                 )
 
-            user.name = request.name
+            user.username = request.username
 
         # passwordが変更される場合
         if request.password is not None:
             user.password = _password_hash(
                 request.password
             )
+
+        # roleが変更される場合
+        if request.role is not None:
+            user.role = request.role.value
 
         db.commit()
         db.refresh(user)
@@ -202,7 +203,7 @@ def update_user(
 # ユーザー削除
 def delete_user(user_id: int, db: DbSession):
     try:
-        user = _get_user_by_id(user_id, db)
+        user = get_user_by_id(user_id, db)
 
         if user is None:
             raise UserNotFoundError(
@@ -239,7 +240,7 @@ def _get_user_by_name(
     try:
         return (
             db.query(User)
-            .filter(User.name == username)
+            .filter(User.username == username)
             .first()
         )
 
@@ -251,13 +252,13 @@ def _get_user_by_name(
 
 
 # IDから取得
-def _get_user_by_id(
+def get_user_by_id(
     user_id: int,
     db: DbSession,
 ):
     try:
         return (
-            db.query(User)
+            db.query(User.username)
             .filter(User.id == user_id)
             .first()
         )

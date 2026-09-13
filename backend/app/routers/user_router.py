@@ -9,6 +9,7 @@ from app.schemas.user_schema import (
     UserRegisterRequest,
     UserLoginRequest,
     UserUpdateRequest,
+    UserUpdateResponse
 )
 from app.services import user_service
 from app.exception.database_exception import (
@@ -144,7 +145,7 @@ async def get_user(
 
 
 # ユーザー情報更新
-@router.patch("/users/{user_id}")
+@router.patch("/users/{user_id}", response_model=UserUpdateResponse)
 async def update_user(
     user_id: int,
     user: UserUpdateRequest,
@@ -156,11 +157,7 @@ async def update_user(
     )
 
     try:
-        result = user_service.update_user(
-            user_id,
-            user,
-            db,
-        )
+        result = user_service.update_user(user_id,user,db)
 
         return result
 

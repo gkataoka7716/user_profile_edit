@@ -20,3 +20,8 @@ class UserUpdateRequest(BaseModel):
     username: str | None = Field(default=None, min_length=4, max_length=64)
     password: str | None = None
     role: UserRole | None = None
+
+class UserUpdateResponse(BaseModel):
+    id: int
+    username: str = Field(min_length=4, max_length=64)
+    role: UserRole
