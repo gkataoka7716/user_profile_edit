@@ -1,2 +1,10 @@
 class DatabaseError(Exception):
-	pass
+    pass
+
+
+class UserAlreadyExistsError(Exception):
+    pass
+
+
+class UserNotFoundError(Exception):
+    pass
