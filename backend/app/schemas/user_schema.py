@@ -25,3 +25,13 @@ class UserUpdateResponse(BaseModel):
     id: int
     username: str = Field(min_length=4, max_length=64)
     role: UserRole
+
+class UserRegisterResponse(BaseModel):
+    id: int
+    username: str = Field(min_length=4, max_length=64)
+    role: UserRole
+
+class UserLoginResponse(BaseModel):
+    id: int
+    username: str = Field(min_length=4, max_length=64)
+    role: UserRole

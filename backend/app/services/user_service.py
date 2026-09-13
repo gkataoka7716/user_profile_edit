@@ -260,7 +260,7 @@ def get_user_by_id(
         return (
             db.query(User.username)
             .filter(User.id == user_id)
-            .first()
+            .scalar()
         )
 
     except Exception as e:

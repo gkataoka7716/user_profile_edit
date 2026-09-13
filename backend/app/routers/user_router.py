@@ -9,7 +9,9 @@ from app.schemas.user_schema import (
     UserRegisterRequest,
     UserLoginRequest,
     UserUpdateRequest,
-    UserUpdateResponse
+    UserUpdateResponse,
+    UserRegisterResponse,
+    UserLoginResponse
 )
 from app.services import user_service
 from app.exception.database_exception import (
@@ -23,7 +25,7 @@ logger = logging.getLogger()
 
 
 # ユーザー登録
-@router.post("/register")
+@router.post("/register", response_model=UserRegisterResponse)
 async def create_user(
     user: UserRegisterRequest,
     db: DbSession,
