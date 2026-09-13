@@ -7,6 +7,7 @@ from app.schemas.user_schema import (
 from database.models.users import User
 import logging
 
+from app.auth.security import create_access_token
 from app.exception.database_exception import (
     DatabaseError,
     UserAlreadyExistsError,
@@ -73,10 +74,13 @@ def login_user(user: UserLoginRequest, db: DbSession):
                 "ユーザー名またはパスワードが正しくありません。"
             )
 
+        access_token = create_access_token(db_user.id)
+
         logger.info("[INFO] ログインに成功しました。")
 
         return {
             "message": "ログインに成功しました。",
+            "access_token": access_token,
             "user_id": db_user.id,
             "name": db_user.name,
         }

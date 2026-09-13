@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException
+from fastapi import Depends
 from database.database import DbSession
+from database.models.users import User
 import logging
 
 from app.schemas.gender_schema import (
@@ -8,6 +10,7 @@ from app.schemas.gender_schema import (
 )
 from app.services import gender_service
 from app.exception.database_exception import DatabaseError
+from app.auth.dependencies import get_current_user
 
 
 router = APIRouter()
@@ -19,7 +22,8 @@ logger = logging.getLogger(__name__)
 @router.post("/genders")
 async def create_gender(
     gender: GenderCreateRequest,
-    db: DbSession
+    db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     logger.info("[INFO] 性別登録を開始します。")
 
@@ -41,7 +45,10 @@ async def create_gender(
 
 # 登録した性別をすべて取得
 @router.get("/genders")
-async def get_genders(db: DbSession):
+async def get_genders(
+    db: DbSession,
+    current_user: User = Depends(get_current_user),
+):
     logger.info("[INFO] 登録済み性別の取得を開始します。")
 
     try:
@@ -64,7 +71,8 @@ async def get_genders(db: DbSession):
 @router.get("/genders/{gender_id}")
 async def get_gender(
     gender_id: int,
-    db: DbSession
+    db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     logger.info(f"[INFO] 性別の取得を開始します。gender_id={gender_id}")
 
@@ -91,7 +99,8 @@ async def get_gender(
 async def update_gender(
     gender_id: int,
     gender: GenderUpdateRequest,
-    db: DbSession
+    db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     logger.info(f"[INFO] 性別の更新を開始します。gender_id={gender_id}")
 
@@ -121,7 +130,8 @@ async def update_gender(
 @router.delete("/genders/{gender_id}")
 async def delete_gender(
     gender_id: int,
-    db: DbSession
+    db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     logger.info(f"[INFO] 性別の削除を開始します。gender_id={gender_id}")
 

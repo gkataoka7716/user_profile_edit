@@ -1,6 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from database.database import DbSession
+from database.models.users import User
+
+from app.auth.dependencies import get_current_user
 
 from app.schemas.userinfo_schema import (
     UserinfoCreateRequest,
@@ -18,6 +21,7 @@ router = APIRouter()
 async def get_user_info(
     user_id: int,
     db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     return userinfo_service.get_user_info(
         user_id,
@@ -31,6 +35,7 @@ async def create_user_info(
     user_id: int,
     userinfo: UserinfoCreateRequest,
     db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     return userinfo_service.create_user_info(
         user_id,
@@ -45,6 +50,7 @@ async def update_user_info(
     user_id: int,
     userinfo: UserInfoUpdateRequest,
     db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     return userinfo_service.update_user_info(
         user_id,

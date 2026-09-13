@@ -1,6 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from database.database import DbSession
+from database.models.users import User
 import logging
+
+from app.auth.dependencies import get_current_user
 
 from app.schemas.user_schema import (
     UserRegisterRequest,
@@ -84,7 +87,10 @@ async def login_user(
 
 # 全ユーザー取得
 @router.get("/users")
-async def get_users(db: DbSession):
+async def get_users(
+    db: DbSession,
+    current_user: User = Depends(get_current_user),
+):
     logger.info("[INFO] 全ユーザー取得処理を開始します。")
 
     try:
@@ -107,6 +113,7 @@ async def get_users(db: DbSession):
 async def get_user(
     user_id: int,
     db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     logger.info(
         f"[INFO] ユーザー取得処理を開始します。id={user_id}"
@@ -142,6 +149,7 @@ async def update_user(
     user_id: int,
     user: UserUpdateRequest,
     db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     logger.info(
         f"[INFO] ユーザー更新処理を開始します。id={user_id}"
@@ -189,6 +197,7 @@ async def update_user(
 async def delete_user(
     user_id: int,
     db: DbSession,
+    current_user: User = Depends(get_current_user),
 ):
     logger.info(
         f"[INFO] ユーザー削除処理を開始します。id={user_id}"
