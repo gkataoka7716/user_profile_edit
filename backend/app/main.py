@@ -1,23 +1,28 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from database.database import engine, Base
+from database.database import engine, Base, SessionLocal
 
 from app.routers import userinfo_router, gender_router, prefectures_router, user_router
+from app.services.gender_service import initialize_genders
+from app.services.prefectures_service import create_prefectures
 
 # 起動時に１回動作する
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # アプリ起動時
     print("アプリを起動します")
 
-    # テーブル作成
     Base.metadata.create_all(bind=engine)
 
-    yield
+    db = SessionLocal()
 
-    # アプリ終了時
-    print("アプリを終了します")
+    try:
+        initialize_genders(db)
+        create_prefectures(db)
+        yield
+    finally:
+        db.close()
+        print("アプリを終了します")
 
 
 app = FastAPI(lifespan=lifespan)

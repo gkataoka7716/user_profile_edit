@@ -6,7 +6,37 @@ from database.models.genders import Genders
 from app.exception.database_exception import DatabaseError
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
+
+# 性別マスタ初期登録
+def initialize_genders(db: Session):
+    gender_list = ["男性", "女性", "その他"]
+
+    try:
+        for name in gender_list:
+            exists = (
+                db.query(Genders)
+                .filter(Genders.name == name)
+                .first()
+            )
+
+            if exists is None:
+                db.add(Genders(name=name))
+
+        db.commit()
+
+        logger.info("[INFO] 性別マスタの初期登録が完了しました。")
+
+    except SQLAlchemyError:
+        db.rollback()
+
+        logger.exception(
+            "[ERROR] 性別マスタの初期登録に失敗しました。"
+        )
+
+        raise DatabaseError(
+            "性別マスタの初期登録に失敗しました。"
+        )
 
 
 # 性別登録
