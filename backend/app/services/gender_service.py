@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 import logging
@@ -44,6 +45,13 @@ def create_gender(gender: str, db: Session):
     new_gender = Genders(name=gender)
 
     try:
+        # 同じ名前の性別が存在するか確認
+        stmt = select(Genders).where(Genders.name == gender)
+        existing_gender = db.execute(stmt).scalar_one_or_none()
+
+        if existing_gender is not None:
+            raise ValueError("同じ名前の性別はすでに登録されています。")
+
         db.add(new_gender)
         db.commit()
         db.refresh(new_gender)

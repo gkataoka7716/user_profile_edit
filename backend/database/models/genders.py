@@ -5,4 +5,4 @@ class Genders(Base):
 	__tablename__ = 'genders'
 
 	id = Column(Integer, primary_key=True)
-	name = Column(String(50), nullable=False)
+	name = Column(String(50), unique=True, nullable=False)

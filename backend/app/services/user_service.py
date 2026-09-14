@@ -6,6 +6,7 @@ from app.schemas.user_schema import (
 )
 from database.models.users import User
 import logging
+from sqlalchemy import func, select
 
 from app.auth.security import create_access_token
 from app.exception.database_exception import (
@@ -44,7 +45,11 @@ def create_user(user: UserRegisterRequest, db: DbSession):
 
         logger.info("[INFO] ユーザーを登録しました。")
 
-        return new_user
+        return {
+            "id": new_user.id,
+            "username": new_user.username,
+            "role": new_user.role,
+        }
 
     except UserAlreadyExistsError:
         raise
@@ -99,12 +104,23 @@ def login_user(user: UserLoginRequest, db: DbSession):
 # 全ユーザー取得
 def get_users(db: DbSession):
     try:
-        users = db.query(User.username).order_by(User.id).scalars().all()
+        stmt = (
+            select(User.id, User.username)
+            .where(User.deleted_at.is_(None))
+            .order_by(User.id)
+        )
+        users = db.execute(stmt).all()
 
         logger.info("[INFO] 全ユーザーを取得しました。")
 
-        return users
-
+        return [
+            {
+                "id": user.id,
+                "name": user.username,
+            }
+            for user in users
+        ]
+    
     except Exception as e:
         logger.error(
             f"[ERROR] 全ユーザー取得に失敗しました: {e}"
@@ -122,7 +138,10 @@ def get_user(user_id: int, db: DbSession):
                 "指定されたユーザーは存在しません。"
             )
 
-        return user
+        return {
+            "id": user.id,
+            "name": user.username,
+        }
 
     except UserNotFoundError:
         raise
@@ -184,7 +203,11 @@ def update_user(
             f"[INFO] ユーザー情報を更新しました。id={user_id}"
         )
 
-        return user
+        return {
+            "id": user.id,
+            "username": user.username,
+            "role": user.role,
+        }
 
     except (
         UserNotFoundError,
@@ -210,7 +233,7 @@ def delete_user(user_id: int, db: DbSession):
                 "指定されたユーザーは存在しません。"
             )
 
-        db.delete(user)
+        user.deleted_at = func.now()
         db.commit()
 
         logger.info(
@@ -240,7 +263,10 @@ def _get_user_by_name(
     try:
         return (
             db.query(User)
-            .filter(User.username == username)
+            .filter(
+                User.username == username,
+                User.deleted_at.is_(None),
+            )
             .first()
         )
 
@@ -258,9 +284,12 @@ def get_user_by_id(
 ):
     try:
         return (
-            db.query(User.username)
-            .filter(User.id == user_id)
-            .scalar()
+            db.query(User)
+            .filter(
+                User.id == user_id,
+                User.deleted_at.is_(None),
+            )
+            .first()
         )
 
     except Exception as e:

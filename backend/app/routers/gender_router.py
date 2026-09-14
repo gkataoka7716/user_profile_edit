@@ -15,7 +15,7 @@ from app.auth.dependencies import get_current_user
 
 router = APIRouter()
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 # 性別登録
@@ -28,7 +28,7 @@ async def create_gender(
     logger.info("[INFO] 性別登録を開始します。")
 
     try:
-        request = gender_service.create_gender(gender, db)
+        request = gender_service.create_gender(gender.name, db)
 
         logger.info("[INFO] 性別登録が完了しました。")
 
@@ -82,6 +82,15 @@ async def get_gender(
         logger.info(f"[INFO] 性別の取得が完了しました。gender_id={gender_id}")
 
         return request
+    
+    except ValueError as e:
+        logger.warning(
+            f"指定された性別が存在しません。gender_id={gender_id}"
+        )
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        )
 
     except DatabaseError as e:
         logger.error(
@@ -107,7 +116,7 @@ async def update_gender(
     try:
         request = gender_service.update_gender(
             gender_id,
-            gender,
+            gender.name,
             db
         )
 
