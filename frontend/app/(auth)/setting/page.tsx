@@ -1,6 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import UsernameInput from "@/composes/UsernameInput";
+import PasswordInput from "@/composes/PasswordInput";
+import InputConditions from "@/composes/InputConditions";
+import { getUsernameError } from "@/utils/UsernameInputValidation";
+import { getPasswordError } from "@/utils/PasswordInputValidation";
 
 type ChangeType = "username" | "password";
 
@@ -11,10 +16,37 @@ export default function AccountSettingsPage() {
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newConfirmPassword, setNewConfirmPassword] = useState("");
+
+  // ユーザー名のエラーチェック
+  const usernameError = getUsernameError(username);
+
+  // 新しいパスワードのエラーチェック
+  const passwordError = getPasswordError(newPassword);
+
+  // 新しいパスワード確認のエラーチェック
+  const newConfirmPasswordError =
+    newConfirmPassword.length > 0 && newPassword !== newConfirmPassword
+      ? "パスワードが一致していません"
+      : null;
+
+  // フォームの入力チェック
+  const isFormValid =
+    changeType === "username"
+      ? username.length > 0 && usernameError === null
+      : oldPassword.length > 0 &&
+        newPassword.length > 0 &&
+        passwordError === null &&
+        newConfirmPassword.length > 0 &&
+        newConfirmPasswordError === null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 念のため、バリデーションエラーがあれば送信しない
+    if (!isFormValid) {
+      return;
+    }
 
     if (changeType === "username") {
       console.log("ユーザー名変更", {
@@ -27,9 +59,25 @@ export default function AccountSettingsPage() {
     console.log("パスワード変更", {
       oldPassword,
       newPassword,
-      confirmPassword,
+      newConfirmPassword,
     });
   };
+
+const handleTabChange = (type: ChangeType) => {
+  // ユーザー名変更に切り替えた場合
+  if (type === "username") {
+    setOldPassword("");
+    setNewPassword("");
+    setNewConfirmPassword("");
+  }
+
+  // パスワード変更に切り替えた場合
+  if (type === "password") {
+    setUsername("");
+  }
+
+  setChangeType(type);
+};
 
   return (
     <main className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-10">
@@ -39,9 +87,7 @@ export default function AccountSettingsPage() {
           アカウント設定
         </h1>
 
-        {/* ============================= */}
         {/* 変更フォーム */}
-        {/* ============================= */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           {/* ラジオボタン */}
           <div className="flex border-b border-gray-200">
@@ -57,7 +103,7 @@ export default function AccountSettingsPage() {
                 name="changeType"
                 value="username"
                 checked={changeType === "username"}
-                onChange={() => setChangeType("username")}
+                onChange={() => handleTabChange("username")}
                 className="accent-blue-600"
               />
               ユーザー名変更
@@ -75,7 +121,7 @@ export default function AccountSettingsPage() {
                 name="changeType"
                 value="password"
                 checked={changeType === "password"}
-                onChange={() => setChangeType("password")}
+                onChange={() => handleTabChange("password")}
                 className="accent-blue-600"
               />
               パスワード変更
@@ -84,9 +130,7 @@ export default function AccountSettingsPage() {
 
           {/* フォーム */}
           <form onSubmit={handleSubmit} className="p-8">
-            {/* ============================= */}
             {/* ユーザー名変更 */}
-            {/* ============================= */}
             {changeType === "username" && (
               <>
                 <div className="mb-6">
@@ -97,32 +141,32 @@ export default function AccountSettingsPage() {
                     新しいユーザー名
                   </label>
 
-                  <input
-                    id="username"
-                    type="text"
+                  <UsernameInput
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="新しいユーザー名を入力"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md
-                               focus:outline-none focus:ring-2 focus:ring-blue-500
-                               focus:border-blue-500"
+                    onChange={setUsername}
+                    error={usernameError !== null}
                   />
+
+                  {usernameError && (
+                    <p className="mt-2 text-sm text-red-500">
+                      {usernameError}
+                    </p>
+                  )}
                 </div>
 
                 <button
                   type="submit"
+                  disabled={!isFormValid}
                   className="w-full py-3 bg-blue-600 text-white font-medium
-                             rounded-md hover:bg-blue-700 transition"
+                             rounded-md hover:bg-blue-700 transition
+                             disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   ユーザー名を変更
                 </button>
               </>
             )}
 
-            {/* ============================= */}
             {/* パスワード変更 */}
-            {/* ============================= */}
             {changeType === "password" && (
               <>
                 {/* 現在のパスワード */}
@@ -134,16 +178,10 @@ export default function AccountSettingsPage() {
                     現在のパスワード
                   </label>
 
-                  <input
-                    id="oldPassword"
-                    type="password"
+                  <PasswordInput
                     value={oldPassword}
-                    onChange={(e) => setOldPassword(e.target.value)}
-                    placeholder="現在のパスワードを入力"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md
-                               focus:outline-none focus:ring-2 focus:ring-blue-500
-                               focus:border-blue-500"
+                    onChange={setOldPassword}
+                    error={false}
                   />
                 </div>
 
@@ -156,45 +194,47 @@ export default function AccountSettingsPage() {
                     新しいパスワード
                   </label>
 
-                  <input
-                    id="newPassword"
-                    type="password"
+                  <PasswordInput
                     value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="新しいパスワードを入力"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md
-                               focus:outline-none focus:ring-2 focus:ring-blue-500
-                               focus:border-blue-500"
+                    onChange={setNewPassword}
+                    error={passwordError !== null}
                   />
+
+                  {passwordError && (
+                    <p className="mt-2 text-sm text-red-500">
+                      {passwordError}
+                    </p>
+                  )}
                 </div>
 
-                {/* 新しいパスワード（確認） */}
+                {/* 新しいパスワード確認 */}
                 <div className="mb-6">
                   <label
-                    htmlFor="confirmPassword"
+                    htmlFor="newConfirmPassword"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
                     新しいパスワード（確認）
                   </label>
 
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="新しいパスワードをもう一度入力"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md
-                               focus:outline-none focus:ring-2 focus:ring-blue-500
-                               focus:border-blue-500"
+                  <PasswordInput
+                    value={newConfirmPassword}
+                    onChange={setNewConfirmPassword}
+                    error={newConfirmPasswordError !== null}
                   />
+
+                  {newConfirmPasswordError && (
+                    <p className="mt-2 text-sm text-red-500">
+                      {newConfirmPasswordError}
+                    </p>
+                  )}
                 </div>
 
                 <button
                   type="submit"
+                  disabled={!isFormValid}
                   className="w-full py-3 bg-blue-600 text-white font-medium
-                             rounded-md hover:bg-blue-700 transition"
+                             rounded-md hover:bg-blue-700 transition
+                             disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   パスワードを変更
                 </button>
@@ -203,51 +243,17 @@ export default function AccountSettingsPage() {
           </form>
         </div>
 
-        {/* ============================= */}
         {/* 入力条件 */}
-        {/* ============================= */}
         <div className="bg-white rounded-lg shadow-md mt-6 p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">入力条件</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            入力条件
+          </h2>
 
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="border border-gray-200 px-4 py-3 text-left">
-                  項目
-                </th>
-
-                <th className="border border-gray-200 px-4 py-3 text-left">
-                  条件
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {changeType === "username" ? (
-                <tr>
-                  <td className="border border-gray-200 px-4 py-3">
-                    ユーザー名
-                  </td>
-
-                  <td className="border border-gray-200 px-4 py-3">
-                    3〜20文字
-                  </td>
-                </tr>
-              ) : (
-                <tr>
-                  <td className="border border-gray-200 px-4 py-3">
-                    パスワード
-                  </td>
-
-                  <td className="border border-gray-200 px-4 py-3">
-                    8〜32文字
-                    <br />
-                    英数字を含む
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <div className="border-t border-gray-200 bg-gray-50 px-8 py-6">
+            <InputConditions
+              types={changeType === "username" ? ["username"] : ["password"]}
+            />
+          </div>
         </div>
       </div>
     </main>

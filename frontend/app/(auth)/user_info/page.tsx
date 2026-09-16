@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import BirthdayInput from "@/composes/BirthdatInput"
+
 export default function UserInfoPage() {
   // 表示モード / 編集モード
   const [isEditing, setIsEditing] = useState(false);
@@ -36,31 +38,38 @@ export default function UserInfoPage() {
         </h1>
 
         {/* ユーザー情報カード */}
-        <div className="relative bg-white rounded-lg shadow-md p-8">
+        <div className="relative bg-white rounded-lg shadow-md p-8 pt-16">
           {/* =========================
               表示モード
           ========================== */}
           {!isEditing && (
             <>
-              {/* 右上ボタン */}
-              <div className="absolute top-4 right-4 flex items-center gap-3">
-                {/* リロード */}
+              {/* リロードボタン */}
+              <div className="absolute top-4 left-4">
                 <button
                   type="button"
                   onClick={() => window.location.reload()}
-                  className="text-gray-500 hover:text-blue-600 text-xl"
+                  className="px-3 py-2 border border-gray-300 rounded-md
+                             text-sm text-gray-500
+                             hover:bg-gray-50 hover:text-gray-700
+                             transition"
                   aria-label="リロード"
                 >
-                  ↻
+                  ↻ リロード
                 </button>
+              </div>
 
-                {/* 編集 */}
+              {/* 編集ボタン */}
+              <div className="absolute top-4 right-4">
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="text-sm text-gray-600 hover:text-blue-600"
+                  className="px-4 py-2 border border-blue-600 rounded-md
+                             text-sm font-medium text-blue-600
+                             hover:bg-blue-50
+                             transition"
                 >
-                  編集
+                  ✎ 編集
                 </button>
               </div>
 
@@ -75,7 +84,9 @@ export default function UserInfoPage() {
 
               {/* 性別 */}
               <div className="mb-6">
-                <p className="text-sm font-medium text-gray-500 mb-2">性別</p>
+                <p className="text-sm font-medium text-gray-500 mb-2">
+                  性別
+                </p>
 
                 <p className="text-gray-800">{gender}</p>
               </div>
@@ -115,24 +126,11 @@ export default function UserInfoPage() {
           {isEditing && (
             <>
               {/* 生年月日 */}
-              <div className="mb-6">
-                <label
-                  htmlFor="birthday"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  生年月日
-                </label>
-
-                <input
-                  id="birthday"
-                  type="date"
-                  value={birthday}
-                  onChange={(e) => setBirthday(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md
-                             focus:outline-none focus:ring-2 focus:ring-blue-500
-                             focus:border-blue-500"
-                />
-              </div>
+              <BirthdayInput
+                value={birthday}
+                onChange={setBirthday}
+              />
+              
 
               {/* 性別 */}
               <div className="mb-6">

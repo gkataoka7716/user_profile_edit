@@ -191,14 +191,22 @@ export default function LoginPage() {
               {activeTab === "login" ? "ログイン" : "ユーザー登録"}
             </button>
           </form>
-
-          {/* 登録時のみ条件一覧を表示 */}
-          {activeTab === "register" && (
-            <div className="border-t border-gray-200 bg-gray-50 px-8 py-6">
-              <InputConditions types={["username", "password"]} />
-            </div>
-          )}
         </div>
+
+        {/* 登録時のみ条件一覧を表示 */}
+        {activeTab === "register" && (
+          <div className="bg-white rounded-lg shadow-md mt-6 p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+              入力条件
+            </h2>
+  
+            <div className="border-t border-gray-200 bg-gray-50 px-8 py-6">
+              <InputConditions
+                types={["username","password"]}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
